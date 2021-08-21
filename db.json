@@ -4,13 +4,19 @@
       "id": 3,
       "text": "Yum Shopping",
       "day": "Sep 5th at 2:30pm",
-      "reminder": false
+      "reminder": true
     },
     {
       "text": "hello",
       "day": "there",
       "reminder": false,
       "id": 4
+    },
+    {
+      "text": "another",
+      "day": "task",
+      "reminder": true,
+      "id": 5
     }
   ]
 }
