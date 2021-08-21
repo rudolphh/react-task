@@ -1,45 +1,70 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import AddTask from "./components/AddTask";
 import Header from "./components/Header";
 import Tasks from "./components/Tasks";
 
 function App() {
-  const [tasks, setTasks] = useState([
-    {
-      id: 1,
-      text: "Food Shopping",
-      day: "Feb 5th at 2:30pm",
-      reminder: false,
-    },
-    {
-      id: 2,
-      text: "Cover Shopping",
-      day: "Aug 5th at 2:30pm",
-      reminder: true,
-    },
-    {
-      id: 3,
-      text: "Yum Shopping",
-      day: "Sep 5th at 2:30pm",
-      reminder: false,
-    },
-  ]);
+  const [showAddTask, setShowAddTask] = useState(false);
+  const [tasks, setTasks] = useState([]);
 
-  const deleteTask = (id) => {
+  useEffect(() => {
+    const getTasks = async () => {
+      const tasksFromServer = await fetchTasks();
+      setTasks(tasksFromServer);
+    };
+    getTasks();
+  }, []);
+
+  const fetchTasks = async () => {
+    const res = await fetch("http://localhost:5000/tasks");
+    const data = await res.json();
+    return data;
+  };
+
+  const showAddTaskForm = () => {
+    setShowAddTask(!showAddTask);
+  };
+
+  const addTask = async (task) => {
+    console.log(task)
+    const res = await fetch("http://localhost:5000/tasks", {
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(task)
+    });
+
+    const data = await res.json();
+    setTasks([...tasks, data])
+
+    // const id = Math.floor(Math.random() * 10000) + 1;
+    // const newTask = {id, ...task}
+    // setTasks([...tasks, newTask])
+  };
+
+  const deleteTask = async (id) => {
+    await fetch(`http://localhost:5000/tasks/${id}`, { method: "DELETE" });
     setTasks(tasks.filter((task) => task.id !== id));
   };
 
   const toggleReminder = (id) => {
-    setTasks(tasks.map((task) => 
-      task.id === id ? { ...task, reminder: !task.reminder } : task
-    ))
-  }
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, reminder: !task.reminder } : task
+      )
+    );
+  };
 
   return (
     <div className="container">
-      <Header />
-      {tasks.length > 0 ? 
-      ( <Tasks tasks={tasks} onDelete={deleteTask} onToggle={toggleReminder} /> ) 
-      : ( "No Tasks" )}
+      <Header showAddTaskForm={showAddTaskForm} showAdd={showAddTask} />
+      {showAddTask && <AddTask onAdd={addTask} />}
+      {tasks.length > 0 ? (
+        <Tasks tasks={tasks} onDelete={deleteTask} onToggle={toggleReminder} />
+      ) : (
+        "No Tasks"
+      )}
     </div>
   );
 }
